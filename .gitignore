@@ -1,0 +1,7 @@
+__pycache__/
+venv/
+.DS_Store
+spreadsheets/
+time_elapsed.txt
+logs/
+*.log
