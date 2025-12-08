@@ -5,7 +5,8 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
-
+import logging
+import os
 
 CATALOGS: dict[str, str] = {
     "2022_2023": "https://catalog.ucmerced.edu/content.php?catoid=21&catoid=21&navoid=1993&filter%5Bitem_type%5D=3&filter%5Bonly_active%5D=1&filter%5B3%5D=1&filter%5Bcpage%5D=1#acalog_template_course_filter",
@@ -14,9 +15,27 @@ CATALOGS: dict[str, str] = {
     "2025_2026": "https://catalog.ucmerced.edu/content.php?catoid=24&catoid=24&navoid=2732&filter%5Bitem_type%5D=3&filter%5Bonly_active%5D=1&filter%5B3%5D=1&filter%5Bcpage%5D=1#acalog_template_course_filter",
 }
 
+def setup_logger(year: str) -> logging.Logger:
+    os.makedirs("logs", exist_ok=True)
+
+    logger = logging.getLogger(year)
+    logger.setLevel(logging.INFO)
+    logger.handlers.clear()
+
+    file_handler = logging.FileHandler(f"logs/{year}.log", mode='w')
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(message)s')
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.propagate = False
+
+    return logger
+
 
 def scrape_catalog(year: str, url: str) -> tuple[str, Scraper]:
     print(f"\n[{year}] Starting scraper...")
+    logger = setup_logger(year)
 
     # ChromeDriver options
     chrome_options = Options()
@@ -28,7 +47,7 @@ def scrape_catalog(year: str, url: str) -> tuple[str, Scraper]:
     )
 
     try:
-        scraper = Scraper(driver, url)
+        scraper = Scraper(driver, url, logger=logger)
         scraper.scrape()
 
         print(f"\n[{year}] Scraping completed!")
@@ -70,9 +89,7 @@ def main():
             except Exception as e:
                 print(f"\n X [{year}] Error: {e}")
 
-
     print("\nSaving results to Excel files...")
-
 
     for year, scraper in results.items():
         try:

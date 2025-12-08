@@ -1,4 +1,3 @@
-# this is for the scraper logic and class
 from bs4 import BeautifulSoup
 import os
 from selenium import webdriver
@@ -14,14 +13,21 @@ import pandas as pd
 
 
 class Scraper:
-    def __init__(self, driver, website_url):
+    def __init__(self, driver, website_url, logger=None):
         self.driver = driver
         self.soup = None
         self.website_url = website_url
+        self.logger = logger
 
         self.all_courses = [] # list of course_data dicts
         self.external_link_classes = [] # for manual review
         self.scraped_courses = set() # set to track already-scraped course codes
+
+    def log(self, message):
+        if self.logger:
+            self.logger.info(message)
+        else:
+            print(message)
     
     def get_course_template(self):
         return {
@@ -48,7 +54,7 @@ class Scraper:
         )
         
         total_pages = int(page_td.text[-2:])
-        print(f"Total number of pages in pagination: {total_pages}.")
+        self.log(f"Total number of pages in pagination: {total_pages}.")
         return total_pages
     
 
@@ -68,8 +74,8 @@ class Scraper:
         for page in range(1, total_pages + 1):
             # Replace the page number in the URL (filter%5Bcpage%5D is filter[cpage] URL-encoded)
             url = self.website_url.replace("filter%5Bcpage%5D=1", f"filter%5Bcpage%5D={page}")
-            print(f"\n=== Scraping page {page}/{total_pages} ===")
-            print(f"URL: {url}")
+            self.log(f"\n=== Scraping page {page}/{total_pages} ===")
+            self.log(f"URL: {url}")
             self.driver.get(url)
             
             time.sleep(2)
@@ -90,7 +96,7 @@ class Scraper:
                     link_to_click = td.find_element(By.TAG_NAME, "a")
                     course_name = link_to_click.text
 
-                    print(f"Clicking on: {course_name}")
+                    self.log(f"Clicking on: {course_name}")
                     link_to_click.click()
 
                     WebDriverWait(self.driver, 10).until(
@@ -101,7 +107,7 @@ class Scraper:
                     )
 
                     if len(self.driver.window_handles) > 1:
-                        print(f"  -> External link detected for {course_name}")
+                        self.log(f"  -> External link detected for {course_name}")
                         self.external_link_classes.append(course_name)
                         self.driver.switch_to.window(self.driver.window_handles[1])
                         self.driver.close()
@@ -117,12 +123,12 @@ class Scraper:
                         # Check if this course has already been scraped
                         course_code = course_data.get('course code', 'Unknown')
                         if course_code in self.scraped_courses:
-                            print(f"  -> Skipping duplicate: {course_code}")
+                            self.log(f"  -> Skipping duplicate: {course_code}")
                         else:
                             # Add to scraped set and courses list
                             self.scraped_courses.add(course_code)
                             self.all_courses.append(course_data)
-                            print(f"  -> Scraped: {course_code}")
+                            self.log(f"  -> Scraped: {course_code}")
 
                         time.sleep(0.5)
 
@@ -138,16 +144,16 @@ class Scraper:
                         WebDriverWait(self.driver, 10).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, "coursepadding"))
                         )
-                        print(f"  -> Dropdown closed for {course_name}")
+                        self.log(f"  -> Dropdown closed for {course_name}")
 
                 except TimeoutException as e:
-                    print(f"Timeout waiting for dropdown/window for row {row_index}: {e}")
+                    self.log(f"Timeout waiting for dropdown/window for row {row_index}: {e}")
                 except StaleElementReferenceException as e:
-                    print(f"Stale element for row {row_index}: {e}")
+                    self.log(f"Stale element for row {row_index}: {e}")
                 except NoSuchElementException as e:
-                    print(f"Element not found in row {row_index}: {e}")
+                    self.log(f"Element not found in row {row_index}: {e}")
                 except Exception as e:
-                    print(f"Unexpected error for row {row_index}: {type(e).__name__} - {e}")
+                    self.log(f"Unexpected error for row {row_index}: {type(e).__name__} - {e}")
 
 
 
@@ -283,7 +289,7 @@ class Scraper:
 
         filename = f"{output_dir}/{year}.xlsx"
         df.to_excel(filename, index=False, sheet_name="Courses")
-        print(f"\nSaved {len(self.all_courses)} courses to {filename}")
+        self.log(f"\nSaved {len(self.all_courses)} courses to {filename}")
 
 
 if __name__ == "__main__":
