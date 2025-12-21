@@ -1,8 +1,6 @@
 from scraper import Scraper
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import logging
@@ -39,12 +37,9 @@ def scrape_catalog(year: str, url: str) -> tuple[str, Scraper]:
 
     # ChromeDriver options
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    #chrome_options.add_argument("--headless")
 
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    driver = webdriver.Chrome(options=chrome_options)
 
     try:
         scraper = Scraper(driver, url, logger=logger)

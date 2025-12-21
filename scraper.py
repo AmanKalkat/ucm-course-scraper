@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup
 import os
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, NoSuchElementException
-from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 
@@ -160,7 +158,7 @@ class Scraper:
     def parse_course_titles(self, course_soup, course_data):
         h3 = course_soup.find("h3")
         if h3 and ":" in h3.text:
-            segments = h3.text.split(":")
+            segments = h3.text.split(":", 1)
             course_data["course code"] = segments[0].strip()
             course_data["course name"] = segments[1].strip()
     
@@ -297,10 +295,7 @@ if __name__ == "__main__":
     catalog_25_26 = "https://catalog.ucmerced.edu/content.php?catoid=24&catoid=24&navoid=2732&filter%5Bitem_type%5D=3&filter%5Bonly_active%5D=1&filter%5B3%5D=1&filter%5Bcpage%5D=1#acalog_template_course_filter"
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    driver = webdriver.Chrome(options=chrome_options)
 
     try:
         scraper = Scraper(driver, catalog_25_26)
