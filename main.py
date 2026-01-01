@@ -1,4 +1,4 @@
-from scraper.scraper import Scraper
+from scraper import Scraper
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from concurrent.futures import ThreadPoolExecutor, as_completed

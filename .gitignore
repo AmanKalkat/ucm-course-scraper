@@ -6,4 +6,3 @@ logs/
 time_elapsed.txt
 logs/
 *.log
-.env
