@@ -1,8 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Union, List
 
 # catalog_year seperated by _ not -
 class Course(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     course_code: str
     course_name: str
     credits: Optional[Union[int, List[int]]] = None
@@ -12,9 +14,6 @@ class Course(BaseModel):
     class_levels: Optional[List[str]] = None
     repeats_allowed_for_credit: Optional[int] = None
     catalog_year: str
-
-    class Config:
-        from_attributes = True
 
 class CourseFilter(BaseModel):
     course_code: Optional[str] = None

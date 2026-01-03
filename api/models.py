@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 import json
 from typing import Optional, Union, List
