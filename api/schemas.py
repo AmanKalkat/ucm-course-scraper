@@ -20,10 +20,6 @@ class CourseFilter(BaseModel):
     course_code: Optional[str] = None
     course_prefix: Optional[str] = None
     catalog_year: Optional[str] = None
-    
-    # Credit based
-    min_credits: Optional[int] = None
-    max_credits: Optional[int] = None
 
     # Prereq & Coreq based
     has_prereqs: Optional[bool] = None
@@ -37,6 +33,6 @@ class CourseFilter(BaseModel):
     # Repeatability
     repeats_allowed: Optional[bool] = None
     min_repeat: Optional[int] = None
-    
+
     # Sorting
     sort_by: Optional[str] = "course_code" 
